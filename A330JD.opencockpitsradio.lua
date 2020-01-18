@@ -19,6 +19,7 @@
 --*************************************************************************************--
 
 local execute_switch = 1
+local bfo_pressed = 0
 
 --*************************************************************************************--
 --** 				              FIND CUSTOM DATAREFS             			    	 **--
@@ -37,6 +38,7 @@ arm_small_button = find_dataref("pikitanga/ocusbmapper/arm/input/encoder/small")
 arm_large_button = find_dataref("pikitanga/ocusbmapper/arm/input/encoder/large")
 arm_power_button = find_dataref("pikitanga/ocusbmapper/arm/input/switch")
 arm_switch_frq_button = find_dataref("pikitanga/ocusbmapper/arm/input/button/tfr")
+arm_bfo_button = find_dataref("pikitanga/ocusbmapper/arm/input/button/bfo")
 
 arm_led_adf = find_dataref("pikitanga/ocusbmapper/arm/output/led/adf")
 arm_led_bfo = find_dataref("pikitanga/ocusbmapper/arm/output/led/bfo")
@@ -63,12 +65,35 @@ jdA330_com_mode = find_dataref("sim/custom/xap/radio/rmp_mode_drf")
 
 jdA330_com_on = find_dataref("sim/custom/xap/radio/on")
 
+jdA330_audio_bar_mech = find_dataref("sim/custom/xap/acp/tran_key/int")
+jdA330_audio_bar_cabine = find_dataref("sim/custom/xap/acp/tran_key/cab")
+jdA330_audio_bar = find_dataref("sim/custom/xap/acp/tran_key/now")
+
 
 --*************************************************************************************--
 --** 				                 SYSTEM FUNCTIONS           	    			 **--
 --*************************************************************************************--
 
 function processArmInput()
+	if jdA330_audio_bar_mech ~= 0 or jdA330_audio_bar_cabine ~= 0 then
+		arm_led_sel[0] = 1
+	else
+		arm_led_sel[0] = 0
+	end
+	
+	if arm_bfo_button[0] == 1 and bfo_pressed == 0 then
+		bfo_pressed = 1
+		if jdA330_audio_bar == 0 then
+			jdA330_audio_bar = 6
+		elseif jdA330_audio_bar == 6 then
+			jdA330_audio_bar = 5
+		else 
+			jdA330_audio_bar = 0
+		end
+	elseif arm_bfo_button[0] == 0 and bfo_pressed == 1 then
+		bfo_pressed = 0
+	end
+
 	if arm_power_button[0] ~= 1 then
 		if arm_display_decimal[0] == 0 then
 			return
